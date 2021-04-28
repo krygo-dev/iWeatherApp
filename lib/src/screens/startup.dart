@@ -1,5 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:i_weather_app/src/screens/login.dart';
+import 'package:i_weather_app/src/screens/registration.dart';
 
 class StartScreen extends StatefulWidget {
   @override
@@ -50,7 +51,7 @@ class _StartScreenState extends State<StartScreen> {
                       Text(weatherDesc,
                           style: TextStyle(color: Colors.white, fontSize: 20)),
                       Image.asset(
-                        'assets/sunny.png',
+                        weatherIcon,
                         height: 100,
                         width: 100,
                       ),
@@ -115,12 +116,24 @@ class _StartScreenState extends State<StartScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Sign in to see more!',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 25)),
-                        Text('Or Sign up!',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 25)),
+                        TextButton(
+                          child: Text('Sign in!',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 25)),
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (context) => LoginScreen()));
+                          },
+                        ),
+                        TextButton(
+                          child: Text('Sign up!',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 25)),
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (context) => RegistrationScreen()));
+                          },
+                        )
                       ],
                     ),
                   )
