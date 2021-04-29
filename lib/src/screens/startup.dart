@@ -122,7 +122,8 @@ class _StartScreenState extends State<StartScreen> {
                                   TextStyle(color: Colors.white, fontSize: 25)),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (context) => LoginScreen()));
+                                MaterialPageRoute(
+                                    builder: (context) => LoginScreen()));
                           },
                         ),
                         TextButton(
@@ -131,7 +132,9 @@ class _StartScreenState extends State<StartScreen> {
                                   TextStyle(color: Colors.white, fontSize: 25)),
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (context) => RegistrationScreen()));
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        RegistrationScreen()));
                           },
                         )
                       ],

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>829172232407-mf6h3a1tkt085jnbu58724ab94ej0foh.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.829172232407-mf6h3a1tkt085jnbu58724ab94ej0foh</string>
+	<key>API_KEY</key>
+	<string>AIzaSyB22vSBVzSFVdzDXd7jl57Rct8woNeKsy8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>829172232407</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.krygodev.iWeatherApp</string>
+	<key>PROJECT_ID</key>
+	<string>weatherapp-e7e37</string>
+	<key>STORAGE_BUCKET</key>
+	<string>weatherapp-e7e37.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:829172232407:ios:458ef6cce10f31ca34c092</string>
+	<key>DATABASE_URL</key>
+	<string>https://weatherapp-e7e37-default-rtdb.europe-west1.firebasedatabase.app</string>
+</dict>
+</plist>

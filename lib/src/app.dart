@@ -6,12 +6,8 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'iWeather',
-      theme: ThemeData(
-        accentColor: Colors.amber,
-        primarySwatch: Colors.blue
-      ),
+      theme: ThemeData(accentColor: Colors.amber, primarySwatch: Colors.blue),
       home: StartScreen(),
     );
   }
-
 }

@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
+import 'package:i_weather_app/src/screens/verify.dart';
 
 class RegistrationScreen extends StatefulWidget {
   @override
@@ -8,7 +11,14 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  String email, password;
+  final auth = FirebaseAuth.instance;
+
+  var _controllerEmail = TextEditingController();
+  var _controllerPassword = TextEditingController();
+  var _controllerPasswordRepeat = TextEditingController();
+  String email, password, passwordRepeat;
+  bool passwordVisible = false;
+  bool passwordRepeatVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +67,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     child: TextField(
                       cursorColor: Theme.of(context).accentColor,
                       style: TextStyle(color: Colors.white),
+                      controller: _controllerEmail,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                           hintText: 'Email',
                           hintStyle: TextStyle(color: Colors.white),
+                          suffixIcon: IconButton(
+                            onPressed: () => _controllerEmail.clear(),
+                            icon: Icon(Icons.clear,
+                                color: _controllerEmail.text.isNotEmpty
+                                    ? Theme.of(context).accentColor
+                                    : Colors.transparent),
+                          ),
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white)),
                           focusedBorder: UnderlineInputBorder(
@@ -79,10 +97,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     child: TextField(
                       cursorColor: Theme.of(context).accentColor,
                       style: TextStyle(color: Colors.white),
-                      obscureText: true,
+                      controller: _controllerPassword,
+                      obscureText: !passwordVisible,
                       decoration: InputDecoration(
                           hintText: 'Password',
                           hintStyle: TextStyle(color: Colors.white),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                                passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: _controllerPassword.text.isNotEmpty
+                                    ? Theme.of(context).accentColor
+                                    : Colors.transparent),
+                            onPressed: () {
+                              setState(() {
+                                passwordVisible = !passwordVisible;
+                              });
+                            },
+                          ),
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white)),
                           focusedBorder: UnderlineInputBorder(
@@ -101,10 +134,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     child: TextField(
                       cursorColor: Theme.of(context).accentColor,
                       style: TextStyle(color: Colors.white),
-                      obscureText: true,
+                      controller: _controllerPasswordRepeat,
+                      obscureText: !passwordRepeatVisible,
                       decoration: InputDecoration(
                         hintText: 'Repeat password',
                         hintStyle: TextStyle(color: Colors.white),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                              passwordRepeatVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: _controllerPasswordRepeat.text.isNotEmpty
+                                  ? Theme.of(context).accentColor
+                                  : Colors.transparent),
+                          onPressed: () {
+                            setState(() {
+                              passwordRepeatVisible = !passwordRepeatVisible;
+                            });
+                          },
+                        ),
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.white)),
                         focusedBorder: UnderlineInputBorder(
@@ -113,17 +161,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          password = value.trim();
+                          passwordRepeat = value.trim();
                         });
                       },
                     ),
                   ),
                   ElevatedButton(
                       child: Text('Sing up'),
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => HomeScreen()));
-                      })
+                      onPressed: () => signUp(email, password, passwordRepeat))
                 ],
               ),
             ),
@@ -131,5 +176,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       ),
     );
+  }
+
+  void signUp(String email, String password, String passwordRepeat) async {
+    try {
+      if (passwordRepeat.isEmpty)
+        throw ("Repeat password field can't be empty.");
+      else if (passwordRepeat != password)
+        throw ("Passwords must be the same.");
+      else {
+        await auth.createUserWithEmailAndPassword(
+            email: email, password: password);
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => VerifyScreen()));
+      }
+    } on FirebaseAuthException catch (error) {
+      Fluttertoast.showToast(
+          msg: error.message, toastLength: Toast.LENGTH_LONG);
+    } catch (error) {
+      Fluttertoast.showToast(
+          msg: error.toString(), toastLength: Toast.LENGTH_LONG);
+    }
   }
 }

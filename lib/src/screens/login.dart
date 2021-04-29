@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/screens/home.dart';
-import 'package:i_weather_app/src/screens/registration.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -9,7 +10,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final auth = FirebaseAuth.instance;
+
+  var _controllerEmail = TextEditingController();
+  var _controllerPassword = TextEditingController();
   String email, password;
+  bool passwordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +65,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       cursorColor: Theme.of(context).accentColor,
                       style: TextStyle(color: Colors.white),
                       keyboardType: TextInputType.emailAddress,
+                      controller: _controllerEmail,
                       decoration: InputDecoration(
                           hintText: 'Email',
                           hintStyle: TextStyle(color: Colors.white),
+                          suffixIcon: IconButton(
+                            onPressed: () => _controllerEmail.clear(),
+                            icon: Icon(Icons.clear,
+                                color: _controllerEmail.text.isNotEmpty
+                                    ? Theme.of(context).accentColor
+                                    : Colors.transparent),
+                          ),
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white)),
                           focusedBorder: UnderlineInputBorder(
@@ -80,10 +94,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextField(
                       cursorColor: Theme.of(context).accentColor,
                       style: TextStyle(color: Colors.white),
-                      obscureText: true,
+                      controller: _controllerPassword,
+                      obscureText: !passwordVisible,
                       decoration: InputDecoration(
                           hintText: 'Password',
                           hintStyle: TextStyle(color: Colors.white),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                                passwordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: _controllerPassword.text.isNotEmpty
+                                    ? Theme.of(context).accentColor
+                                    : Colors.transparent),
+                            onPressed: () {
+                              setState(() {
+                                passwordVisible = !passwordVisible;
+                              });
+                            },
+                          ),
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white)),
                           focusedBorder: UnderlineInputBorder(
@@ -98,16 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ElevatedButton(
                       child: Text('Sing in'),
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => HomeScreen()));
-                      }),
-                  ElevatedButton(
-                      child: Text('Sing up'),
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => RegistrationScreen()));
-                      })
+                      onPressed: () => signIn(email, password)),
                 ],
               ),
             ),
@@ -115,5 +135,20 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  signIn(String email, String password) async {
+    try {
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+      if (!auth.currentUser.emailVerified) throw ('Verify your email please.');
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomeScreen()));
+    } on FirebaseAuthException catch (error) {
+      Fluttertoast.showToast(
+          msg: error.message, toastLength: Toast.LENGTH_LONG);
+    } catch (error) {
+      Fluttertoast.showToast(
+          msg: error.toString(), toastLength: Toast.LENGTH_LONG);
+    }
   }
 }

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "829172232407",
+    "firebase_url": "https://weatherapp-e7e37-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "weatherapp-e7e37",
+    "storage_bucket": "weatherapp-e7e37.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829172232407:android:8770755508638a4234c092",
+        "android_client_info": {
+          "package_name": "com.krygodev.i_weather_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829172232407-jp6cbiumlv8mlg62fsifer2trt2hht8o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZFjR_uG9tR6O5-EZlBFS-Y0lVw_0SajE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "829172232407-jp6cbiumlv8mlg62fsifer2trt2hht8o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
