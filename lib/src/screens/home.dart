@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 
 class HomeScreen extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

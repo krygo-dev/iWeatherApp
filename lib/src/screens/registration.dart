@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
 import 'package:i_weather_app/src/screens/verify.dart';
 
@@ -23,6 +22,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(''),
@@ -62,7 +62,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     width: 283,
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                         vertical: 30, horizontal: 40),
                     child: TextField(
                       cursorColor: Theme.of(context).accentColor,
@@ -166,9 +166,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       },
                     ),
                   ),
-                  ElevatedButton(
-                      child: Text('Sing up'),
-                      onPressed: () => signUp(email, password, passwordRepeat))
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
+                    width: MediaQuery.of(context).size.width,
+                    height: 45,
+                    child: ElevatedButton(
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontFamily: 'RadikalMedium',
+                            fontSize: 17),
+                      ),
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).accentColor)
+                      ),
+                      onPressed: () {
+                        signUp(email, password, passwordRepeat);
+                      },
+                    ),
+                  )
                 ],
               ),
             ),

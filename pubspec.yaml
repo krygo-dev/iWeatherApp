@@ -31,6 +31,8 @@ dependencies:
   fluttertoast: ^7.1.8
   firebase_core: ^1.1.0
   firebase_auth: ^1.1.2
+  http: ^0.13.2
+  geolocator: ^7.0.3
 
 dev_dependencies:
   flutter_test:

@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(''),
@@ -125,9 +126,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                   ),
-                  ElevatedButton(
-                      child: Text('Sing in'),
-                      onPressed: () => signIn(email, password)),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
+                    width: MediaQuery.of(context).size.width,
+                    height: 45,
+                    child: ElevatedButton(
+                      child: Text(
+                        "Sign In",
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontFamily: 'RadikalMedium',
+                            fontSize: 17),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).accentColor)
+                      ),
+                      onPressed: () {
+                        signIn(email, password);
+                      },
+                    ),
+                  )
                 ],
               ),
             ),
@@ -137,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  signIn(String email, String password) async {
+  void signIn(String email, String password) async {
     try {
       await auth.signInWithEmailAndPassword(email: email, password: password);
       if (!auth.currentUser.emailVerified) throw ('Verify your email please.');

@@ -34,8 +34,50 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text('An email has been sent to ${user.email}, please verify.'),
+      resizeToAvoidBottomInset: false,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(''),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        child: Stack(children: [
+          Image.asset(
+            'assets/bg.png',
+            fit: BoxFit.cover,
+            height: double.infinity,
+            width: double.infinity,
+          ),
+          Container(
+            decoration: BoxDecoration(color: Colors.black54),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 90, 0, 20),
+            child: Column(
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: 80,
+                  width: 283,
+                ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(40, 180, 40, 0),
+                  child: Center(
+                    child: Text(
+                      'An email has been sent to ${user.email}, please verify!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).accentColor,
+                        fontSize: 25,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
+        ]),
       ),
     );
   }
