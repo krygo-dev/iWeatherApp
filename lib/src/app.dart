@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
 
 class App extends StatelessWidget {
-
+  final auth = FirebaseAuth.instance;
   final Map<int, Color> primaryColor =
   {
     50:Color.fromRGBO(42, 82, 97, .1),
@@ -25,7 +27,7 @@ class App extends StatelessWidget {
           accentColor: Color.fromARGB(255, 248, 208, 108),
           primarySwatch: MaterialColor(0xFF2A5261, primaryColor)
       ),
-      home: StartScreen(),
+      home: auth.currentUser != null ? HomeScreen() : StartScreen(),
     );
   }
 }
