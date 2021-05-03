@@ -158,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void signIn(String email, String password) async {
     try {
       await auth.signInWithEmailAndPassword(email: email, password: password);
-      if (!auth.currentUser.emailVerified) throw ('Verify your email please.');
+      //if (!auth.currentUser.emailVerified) throw ('Verify your email please.');
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));
     } on FirebaseAuthException catch (error) {
