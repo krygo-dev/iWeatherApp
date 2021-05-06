@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:i_weather_app/src/screens/home.dart';
 
 class VerifyScreen extends StatefulWidget {
@@ -43,12 +44,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       ),
       body: Container(
         child: Stack(children: [
-          Image.asset(
-            'assets/bg.png',
-            fit: BoxFit.cover,
-            height: double.infinity,
-            width: double.infinity,
-          ),
+          SvgPicture.asset('assets/png/bg.png'),
           Container(
             decoration: BoxDecoration(color: Colors.black54),
           ),
@@ -57,7 +53,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             child: Column(
               children: [
                 Image.asset(
-                  'assets/logo.png',
+                  'assets/svg/logo.svg',
                   height: 80,
                   width: 283,
                 ),

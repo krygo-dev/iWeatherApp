@@ -86,7 +86,7 @@ class _StartScreenState extends State<StartScreen> {
         child: Stack(
           children: [
             Image.asset(
-              'assets/bg.png',
+              'assets/png/bg.png',
               fit: BoxFit.cover,
               height: double.infinity,
               width: double.infinity,

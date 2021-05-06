@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
@@ -42,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Stack(
           children: [
             Image.asset(
-              'assets/bg.png',
+              'assets/png/bg.png',
               fit: BoxFit.cover,
               height: double.infinity,
               width: double.infinity,
@@ -54,11 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
               margin: EdgeInsets.fromLTRB(0, 90, 0, 20),
               child: Column(
                 children: [
-                  Image.asset(
-                    'assets/logo.png',
-                    height: 80,
-                    width: 283,
-                  ),
+                  SvgPicture.asset('assets/svg/logo_name.svg'),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 30, horizontal: 40),
