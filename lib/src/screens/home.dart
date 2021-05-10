@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/api_key.dart';
+import 'package:i_weather_app/src/constants.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:intl/intl.dart';
 
@@ -12,12 +14,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final auth = FirebaseAuth.instance;
+  final realDB = FirebaseDatabase.instance.reference();
 
   bool isSearching = false, inFav = false;
   var _searchController = TextEditingController();
 
   String search,
       currentLocation = 'Oświęcim',
+      currentLocationID = '854696',
       weatherIcon = '04d',
       weatherDesc = 'Cloud';
 
@@ -32,13 +36,54 @@ class _HomeScreenState extends State<HomeScreen> {
   var date = DateFormat.yMMMd()
       .format(DateTime.fromMillisecondsSinceEpoch(1631463245 * 1000));
 
+  var dbSnapshot;
+  Map favouritesCities;
+
   // ignore: non_constant_identifier_names
-  final String API_KEY = Constants().API_KEY;
-  String apiUrl = 'https://api.openweathermap.org/data/2.5';
-  String iconUrl = 'https://openweathermap.org/img/wn/';
+  final String API_KEY = APIKEY().API_KEY;
+  String apiUrl = Constants().apiUrl;
+  String iconUrl = Constants().iconUrl;
 
   void searchLocation(String locationName) {
     print(locationName);
+  }
+
+  void addToFavourites() {
+    realDB.child(auth.currentUser.uid).child('favourites').update({
+      '$currentLocationID' : {
+        'id' : currentLocationID,
+        'name' : currentLocation
+      }
+    });
+    readUserFavourites();
+
+    Fluttertoast.showToast(
+        msg: 'Added to favourites!', toastLength: Toast.LENGTH_SHORT);
+
+  }
+
+  void removeFromFavourites() {
+    realDB.child(auth.currentUser.uid).child('favourites').child(currentLocationID).remove();
+    readUserFavourites();
+    Fluttertoast.showToast(
+        msg: 'Removed from favourites!', toastLength: Toast.LENGTH_SHORT);
+  }
+
+  void readUserFavourites() async {
+    await realDB.child(auth.currentUser.uid).once().then((dataSnapshot) {
+      dbSnapshot = dataSnapshot.value;
+    });
+
+    print(dbSnapshot['favourites']);
+    favouritesCities = dbSnapshot['favourites'];
+
+    print(favouritesCities != null ? favouritesCities.length : 'Empty');
+  }
+
+  @override
+  void initState() {
+    readUserFavourites();
+    super.initState();
   }
 
   @override
@@ -58,11 +103,11 @@ class _HomeScreenState extends State<HomeScreen> {
             : TextField(
                 autofocus: true,
                 controller: _searchController,
-                cursorColor: Theme.of(context).accentColor,
-                style: TextStyle(color: Colors.white),
+                cursorColor: Colors.black,
+                style: TextStyle(color: Theme.of(context).accentColor),
                 decoration: InputDecoration(
                     hintText: 'Search here..',
-                    hintStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Theme.of(context).accentColor),
                     suffixIcon: IconButton(
                       onPressed: () => _searchController.clear(),
                       icon: Icon(Icons.clear,
@@ -71,9 +116,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               : Colors.transparent),
                     ),
                     enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white)),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).accentColor)),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide:
+                          BorderSide(color: Theme.of(context).accentColor),
                     )),
                 onSubmitted: (value) {
                   setState(() {
@@ -81,11 +128,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                   searchLocation(search);
                 },
+                onChanged: (value) {
+                  setState(() {
+                    search = value.trim();
+                  });
+                },
               ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.search, color: Colors.white, size: 30),
+          icon: Icon(Icons.search,
+              color: Theme.of(context).accentColor, size: 30),
           onPressed: () {
             setState(() {
               isSearching = !isSearching;
@@ -94,7 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-              icon: Icon(Icons.menu, color: Colors.white, size: 30),
+              icon: Icon(Icons.logout,
+                  color: Theme.of(context).accentColor, size: 30),
               onPressed: () {
                 auth.signOut().then((value) => Navigator.of(context)
                     .pushReplacement(MaterialPageRoute(
@@ -105,830 +159,443 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         child: Stack(
           children: [
+            //Container(
+            //  decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            //),
+            Image.asset(
+              'assets/png/bg.png',
+              fit: BoxFit.cover,
+              height: double.infinity,
+              width: double.infinity,
+            ),
             Container(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              decoration: BoxDecoration(color: Colors.white38),
             ),
             PageView(
               children: [
-                ListView(
+                Column(
                   children: [
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Text(currentLocation,
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 40)),
-                                    IconButton(
-                                      icon: !inFav
-                                          ? Icon(Icons.favorite_border,
-                                              size: 40,
-                                              color:
-                                                  Theme.of(context).accentColor)
-                                          : Icon(Icons.favorite,
-                                              size: 40,
-                                              color:
-                                                  Theme.of(context).accentColor),
-                                      onPressed: () {
-                                        setState(() {
-                                          inFav = !inFav;
-                                        });
-                                        inFav
-                                            ? Fluttertoast.showToast(
-                                                msg: 'Added to favourite!',
-                                                toastLength: Toast.LENGTH_SHORT)
-                                            : Fluttertoast.showToast(
-                                                msg: 'Removed from favourite!',
-                                                toastLength: Toast.LENGTH_SHORT);
-                                      },
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Text(weatherDesc,
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20)),
-                              Image.network(
-                                iconUrl + weatherIcon + '@2x.png',
-                                width: 100,
-                                height: 100,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                child: Text('${temperature.toString()} \u2103',
+                    Padding(
+                      padding: const EdgeInsets.only(top: 70),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text(currentLocation,
                                     style: TextStyle(
-                                        color: Colors.white, fontSize: 70)),
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Feel',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Min',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Max',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Pressure',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Humidity',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Wind',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text('${feelTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${minTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${maxTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${pressure.toString()} hPa',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${humidity.toString()}%',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${wind.toString()} km/h',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Divider(
+                                        color: Theme.of(context).accentColor,
+                                        fontSize: 40)),
+                                IconButton(
+                                  icon: !inFav
+                                      ? Icon(Icons.favorite_border,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor)
+                                      : Icon(Icons.favorite,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor),
+                                  onPressed: () {
+                                    setState(() {
+                                      if (favouritesCities != null && favouritesCities.length >= 5 && !inFav) Fluttertoast.showToast(
+                                          msg: "Favourites cities list is full!", toastLength: Toast.LENGTH_LONG);
+                                      else {
+                                        inFav = !inFav;
+                                        inFav
+                                            ? addToFavourites()
+                                            : removeFromFavourites();
+                                      }
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          Text(weatherDesc,
+                              style: TextStyle(
                                   color: Theme.of(context).accentColor,
-                                  thickness: 2,
-                                  height: 60,
-                                  indent: 40,
-                                  endIndent: 40),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                  fontSize: 20)),
+                          Image.network(
+                            iconUrl + weatherIcon + '@2x.png',
+                            width: 100,
+                            height: 100,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text('${temperature.toString()} \u2103',
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor,
+                                    fontSize: 70)),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(date,
+                                  Text('Feel',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Min',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 20))
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Max',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Pressure',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Humidity',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Wind',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(date,
+                                  Text('${feelTemp.toString()} \u2103',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${minTemp.toString()} \u2103',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${maxTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${pressure.toString()} hPa',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${humidity.toString()}%',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${wind.toString()} km/h',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              )
                             ],
                           ),
-                        ),
-                      ],
+                          Divider(
+                              color: Theme.of(context).accentColor,
+                              thickness: 2,
+                              height: 60,
+                              indent: 40,
+                              endIndent: 40),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                ListView(
+                Column(
                   children: [
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 15),
-                          child: Column(
+                    Padding(
+                      padding: const EdgeInsets.only(top: 70),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text(currentLocation,
+                                    style: TextStyle(
+                                        color: Theme.of(context).accentColor,
+                                        fontSize: 40)),
+                                IconButton(
+                                  icon: !inFav
+                                      ? Icon(Icons.favorite_border,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor)
+                                      : Icon(Icons.favorite,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor),
+                                  onPressed: () {
+                                    setState(() {
+                                      inFav = !inFav;
+                                    });
+                                    inFav
+                                        ? Fluttertoast.showToast(
+                                            msg: 'Added to favourite!',
+                                            toastLength: Toast.LENGTH_SHORT)
+                                        : Fluttertoast.showToast(
+                                            msg: 'Removed from favourite!',
+                                            toastLength: Toast.LENGTH_SHORT);
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          Text(weatherDesc,
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor,
+                                  fontSize: 20)),
+                          Image.network(
+                            iconUrl + weatherIcon + '@2x.png',
+                            width: 100,
+                            height: 100,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text('${temperature.toString()} \u2103',
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor,
+                                    fontSize: 70)),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(currentLocation,
+                                  Text('Feel',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 40)),
-                                  IconButton(
-                                    icon: !inFav
-                                        ? Icon(Icons.favorite_border,
-                                            size: 40,
-                                            color:
-                                                Theme.of(context).accentColor)
-                                        : Icon(Icons.favorite,
-                                            size: 40,
-                                            color:
-                                                Theme.of(context).accentColor),
-                                    onPressed: () {
-                                      setState(() {
-                                        inFav = !inFav;
-                                      });
-                                      inFav
-                                          ? Fluttertoast.showToast(
-                                              msg: 'Added to favourite!',
-                                              toastLength: Toast.LENGTH_SHORT)
-                                          : Fluttertoast.showToast(
-                                              msg: 'Removed from favourite!',
-                                              toastLength: Toast.LENGTH_SHORT);
-                                    },
-                                  )
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Min',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Max',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Pressure',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Humidity',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Wind',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Text(weatherDesc,
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20)),
-                              Image.network(
-                                iconUrl + weatherIcon + '@2x.png',
-                                width: 100,
-                                height: 100,
-                              ),
-                              Text('${temperature.toString()} \u2103',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 70)),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Feel',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Min',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Max',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Pressure',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Humidity',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Wind',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text('${feelTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${minTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${maxTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${pressure.toString()} hPa',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${humidity.toString()}%',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${wind.toString()} km/h',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
+                                  Text('${feelTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${minTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${maxTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${pressure.toString()} hPa',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${humidity.toString()}%',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${wind.toString()} km/h',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  thickness: 2,
-                                  height: 60,
-                                  indent: 40,
-                                  endIndent: 40),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20))
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              )
                             ],
                           ),
-                        ),
-                      ],
+                          Divider(
+                              color: Theme.of(context).accentColor,
+                              thickness: 2,
+                              height: 60,
+                              indent: 40,
+                              endIndent: 40),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                ListView(
+                Column(
                   children: [
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 15),
-                          child: Column(
+                    Padding(
+                      padding: const EdgeInsets.only(top: 70),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text(currentLocation,
+                                    style: TextStyle(
+                                        color: Theme.of(context).accentColor,
+                                        fontSize: 40)),
+                                IconButton(
+                                  icon: !inFav
+                                      ? Icon(Icons.favorite_border,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor)
+                                      : Icon(Icons.favorite,
+                                          size: 40,
+                                          color: Theme.of(context).accentColor),
+                                  onPressed: () {
+                                    setState(() {
+                                      inFav = !inFav;
+                                    });
+                                    inFav
+                                        ? Fluttertoast.showToast(
+                                            msg: 'Added to favourite!',
+                                            toastLength: Toast.LENGTH_SHORT)
+                                        : Fluttertoast.showToast(
+                                            msg: 'Removed from favourite!',
+                                            toastLength: Toast.LENGTH_SHORT);
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          Text(weatherDesc,
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor,
+                                  fontSize: 20)),
+                          Image.network(
+                            iconUrl + weatherIcon + '@2x.png',
+                            width: 100,
+                            height: 100,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text('${temperature.toString()} \u2103',
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor,
+                                    fontSize: 70)),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(currentLocation,
+                                  Text('Feel',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 40)),
-                                  IconButton(
-                                    icon: !inFav
-                                        ? Icon(Icons.favorite_border,
-                                            size: 40,
-                                            color:
-                                                Theme.of(context).accentColor)
-                                        : Icon(Icons.favorite,
-                                            size: 40,
-                                            color:
-                                                Theme.of(context).accentColor),
-                                    onPressed: () {
-                                      setState(() {
-                                        inFav = !inFav;
-                                      });
-                                      inFav
-                                          ? Fluttertoast.showToast(
-                                              msg: 'Added to favourite!',
-                                              toastLength: Toast.LENGTH_SHORT)
-                                          : Fluttertoast.showToast(
-                                              msg: 'Removed from favourite!',
-                                              toastLength: Toast.LENGTH_SHORT);
-                                    },
-                                  )
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Min',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Max',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Pressure',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Humidity',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Wind',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Text(weatherDesc,
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20)),
-                              Image.network(
-                                iconUrl + weatherIcon + '@2x.png',
-                                width: 100,
-                                height: 100,
-                              ),
-                              Text('${temperature.toString()} \u2103',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 70)),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Feel',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Min',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Max',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Pressure',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Humidity',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('Wind',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text('${feelTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${minTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${maxTemp.toString()} \u2103',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${pressure.toString()} hPa',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${humidity.toString()}%',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25)),
-                                      Text('${wind.toString()} km/h',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25))
-                                    ],
-                                  ),
+                                  Text('${feelTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${minTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${maxTemp.toString()} \u2103',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${pressure.toString()} hPa',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${humidity.toString()}%',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${wind.toString()} km/h',
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold))
                                 ],
                               ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  thickness: 2,
-                                  height: 60,
-                                  indent: 40,
-                                  endIndent: 40),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20))
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              ),
-                              Divider(
-                                  color: Theme.of(context).accentColor,
-                                  indent: 50,
-                                  endIndent: 50),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                  Image.network(
-                                    iconUrl + weatherIcon + '@2x.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                  Text('${temperature.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
-                                ],
-                              )
                             ],
                           ),
-                        ),
-                      ],
+                          Divider(
+                              color: Theme.of(context).accentColor,
+                              thickness: 2,
+                              height: 60,
+                              indent: 40,
+                              endIndent: 40),
+                        ],
+                      ),
                     ),
                   ],
                 ),

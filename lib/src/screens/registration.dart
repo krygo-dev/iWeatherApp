@@ -37,7 +37,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           icon: Icon(
             Icons.arrow_back,
             size: 25,
-            color: Colors.white,
+            color: Theme.of(context).accentColor,
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               width: double.infinity,
             ),
             Container(
-              decoration: BoxDecoration(color: Colors.black54),
+              decoration: BoxDecoration(color: Colors.white38),
             ),
             Container(
               margin: EdgeInsets.fromLTRB(0, 90, 0, 20),
@@ -62,13 +62,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     padding: EdgeInsets.symmetric(
                         vertical: 30, horizontal: 40),
                     child: TextField(
-                      cursorColor: Theme.of(context).accentColor,
-                      style: TextStyle(color: Colors.white),
+                      cursorColor: Colors.black,
+                      style: TextStyle(color: Theme.of(context).accentColor),
                       controller: _controllerEmail,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                           hintText: 'Email',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Theme.of(context).accentColor),
                           suffixIcon: IconButton(
                             onPressed: () => _controllerEmail.clear(),
                             icon: Icon(Icons.clear,
@@ -77,9 +77,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     : Colors.transparent),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
+                              borderSide: BorderSide(color: Theme.of(context).accentColor)),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
+                            borderSide: BorderSide(color: Theme.of(context).accentColor),
                           )),
                       onChanged: (value) {
                         setState(() {
@@ -92,13 +92,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 20, horizontal: 40),
                     child: TextField(
-                      cursorColor: Theme.of(context).accentColor,
-                      style: TextStyle(color: Colors.white),
+                      cursorColor: Colors.black,
+                      style: TextStyle(color: Theme.of(context).accentColor),
                       controller: _controllerPassword,
                       obscureText: !passwordVisible,
                       decoration: InputDecoration(
                           hintText: 'Password',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Theme.of(context).accentColor),
                           suffixIcon: IconButton(
                             icon: Icon(
                                 passwordVisible
@@ -114,9 +114,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             },
                           ),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
+                              borderSide: BorderSide(color: Theme.of(context).accentColor)),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
+                            borderSide: BorderSide(color: Theme.of(context).accentColor),
                           )),
                       onChanged: (value) {
                         setState(() {
@@ -129,13 +129,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 20, horizontal: 40),
                     child: TextField(
-                      cursorColor: Theme.of(context).accentColor,
-                      style: TextStyle(color: Colors.white),
+                      cursorColor: Colors.black,
+                      style: TextStyle(color: Theme.of(context).accentColor),
                       controller: _controllerPasswordRepeat,
                       obscureText: !passwordRepeatVisible,
                       decoration: InputDecoration(
                         hintText: 'Repeat password',
-                        hintStyle: TextStyle(color: Colors.white),
+                        hintStyle: TextStyle(color: Theme.of(context).accentColor),
                         suffixIcon: IconButton(
                           icon: Icon(
                               passwordRepeatVisible
@@ -151,9 +151,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                         ),
                         enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white)),
+                            borderSide: BorderSide(color: Theme.of(context).accentColor)),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white),
+                          borderSide: BorderSide(color: Theme.of(context).accentColor),
                         ),
                       ),
                       onChanged: (value) {
@@ -165,19 +165,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
-                    width: MediaQuery.of(context).size.width,
+                    width: 150,
                     height: 45,
                     child: ElevatedButton(
                       child: Text(
-                        "Sign Up",
+                        "Sign Up!",
                         style: TextStyle(
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.white,
                             fontFamily: 'RadikalMedium',
                             fontSize: 17),
                       ),
                       style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).accentColor)
-                      ),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Theme.of(context).accentColor),
+                          shape:
+                          MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                              ))),
                       onPressed: () {
                         signUp(email, password, passwordRepeat);
                       },
@@ -201,6 +206,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       else {
         await auth.createUserWithEmailAndPassword(
             email: email, password: password);
+
         Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => VerifyScreen()));
       }

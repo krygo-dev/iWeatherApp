@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,6 +13,7 @@ class VerifyScreen extends StatefulWidget {
 
 class _VerifyScreenState extends State<VerifyScreen> {
   final auth = FirebaseAuth.instance;
+  final realDB = FirebaseDatabase.instance.reference();
   User user;
   Timer timer;
 
@@ -44,16 +46,16 @@ class _VerifyScreenState extends State<VerifyScreen> {
       ),
       body: Container(
         child: Stack(children: [
-          SvgPicture.asset('assets/png/bg.png'),
+          Image.asset('assets/png/bg.png'),
           Container(
-            decoration: BoxDecoration(color: Colors.black54),
+            decoration: BoxDecoration(color: Colors.white38),
           ),
           Container(
             margin: EdgeInsets.fromLTRB(0, 90, 0, 20),
             child: Column(
               children: [
-                Image.asset(
-                  'assets/svg/logo.svg',
+                SvgPicture.asset(
+                  'assets/svg/logo_name.svg',
                   height: 80,
                   width: 283,
                 ),
@@ -82,6 +84,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
     user = auth.currentUser;
     await user.reload();
     if (user.emailVerified) {
+      await realDB.child(auth.currentUser.uid).set({
+        'uid': auth.currentUser.uid,
+        'email': auth.currentUser.email,
+        'favourites' : {}
+      });
       timer.cancel();
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));

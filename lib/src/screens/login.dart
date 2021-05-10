@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
           icon: Icon(
             Icons.arrow_back,
             size: 25,
-            color: Colors.white,
+            color: Theme.of(context).accentColor,
           ),
         ),
       ),
@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
             ),
             Container(
-              decoration: BoxDecoration(color: Colors.black54),
+              decoration: BoxDecoration(color: Colors.white38),
             ),
             Container(
               margin: EdgeInsets.fromLTRB(0, 90, 0, 20),
@@ -60,13 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 30, horizontal: 40),
                     child: TextField(
-                      cursorColor: Theme.of(context).accentColor,
-                      style: TextStyle(color: Colors.white),
+                      cursorColor: Colors.black,
+                      style: TextStyle(color: Theme.of(context).accentColor),
                       keyboardType: TextInputType.emailAddress,
                       controller: _controllerEmail,
                       decoration: InputDecoration(
                           hintText: 'Email',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Theme.of(context).accentColor),
                           suffixIcon: IconButton(
                             onPressed: () => _controllerEmail.clear(),
                             icon: Icon(Icons.clear,
@@ -75,9 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     : Colors.transparent),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
+                              borderSide: BorderSide(color: Theme.of(context).accentColor)),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
+                            borderSide: BorderSide(color: Theme.of(context).accentColor),
                           )),
                       onChanged: (value) {
                         setState(() {
@@ -90,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 20, horizontal: 40),
                     child: TextField(
-                      cursorColor: Theme.of(context).accentColor,
-                      style: TextStyle(color: Colors.white),
+                      cursorColor: Colors.black,
+                      style: TextStyle(color: Theme.of(context).accentColor),
                       controller: _controllerPassword,
                       obscureText: !passwordVisible,
                       decoration: InputDecoration(
                           hintText: 'Password',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Theme.of(context).accentColor),
                           suffixIcon: IconButton(
                             icon: Icon(
                                 passwordVisible
@@ -112,9 +112,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white)),
+                              borderSide: BorderSide(color: Theme.of(context).accentColor)),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
+                            borderSide: BorderSide(color: Theme.of(context).accentColor),
                           )),
                       onChanged: (value) {
                         setState(() {
@@ -125,19 +125,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 30, horizontal: 40),
-                    width: MediaQuery.of(context).size.width,
+                    width: 150,
                     height: 45,
                     child: ElevatedButton(
                       child: Text(
-                        "Sign In",
+                        "Sign In!",
                         style: TextStyle(
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.white,
                             fontFamily: 'RadikalMedium',
                             fontSize: 17),
                       ),
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).accentColor)
-                      ),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Theme.of(context).accentColor),
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                          ))),
                       onPressed: () {
                         signIn(email, password);
                       },
