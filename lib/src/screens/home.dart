@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/api_key.dart';
 import 'package:i_weather_app/src/constants.dart';
+import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/screens/login.dart';
+import 'package:i_weather_app/src/services.dart';
+import 'package:i_weather_app/src/widgets/single_city.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String search,
       currentLocation = 'Oświęcim',
-      currentLocationID = '854696',
+      currentLocationID = '3089658',
       weatherIcon = '04d',
       weatherDesc = 'Cloud';
 
@@ -38,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var dbSnapshot;
   Map favouritesCities;
+  List favCitiesIDs;
+  CurrentWeather curr;
+
+  List<CurrentWeather> favCitiesWeather = [];
 
   // ignore: non_constant_identifier_names
   final String API_KEY = APIKEY().API_KEY;
@@ -50,20 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void addToFavourites() {
     realDB.child(auth.currentUser.uid).child('favourites').update({
-      '$currentLocationID' : {
-        'id' : currentLocationID,
-        'name' : currentLocation
-      }
+      '$currentLocationID': {'id': currentLocationID, 'name': currentLocation}
     });
     readUserFavourites();
 
     Fluttertoast.showToast(
         msg: 'Added to favourites!', toastLength: Toast.LENGTH_SHORT);
-
   }
 
   void removeFromFavourites() {
-    realDB.child(auth.currentUser.uid).child('favourites').child(currentLocationID).remove();
+    realDB
+        .child(auth.currentUser.uid)
+        .child('favourites')
+        .child(currentLocationID)
+        .remove();
     readUserFavourites();
     Fluttertoast.showToast(
         msg: 'Removed from favourites!', toastLength: Toast.LENGTH_SHORT);
@@ -76,13 +83,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
     print(dbSnapshot['favourites']);
     favouritesCities = dbSnapshot['favourites'];
+    favCitiesIDs = favouritesCities.keys.toList();
 
-    print(favouritesCities != null ? favouritesCities.length : 'Empty');
+    favCitiesIDs.forEach((id) {
+      Services.getCurrentWeatherByCityID(id.toString()).then((value) {
+        setState(() {
+          favCitiesWeather.add(value);
+        });
+      });
+    });
+
+    print(favouritesCities != null ? favouritesCities.keys.toList() : 'Empty');
   }
 
   @override
   void initState() {
     readUserFavourites();
+    Services.getCurrentWeatherByCityID('3089658').then((value) {
+      setState(() {
+        curr = value;
+      });
+    });
     super.initState();
   }
 
@@ -171,436 +192,60 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               decoration: BoxDecoration(color: Colors.white38),
             ),
-            PageView(
-              children: [
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 70),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text(currentLocation,
-                                    style: TextStyle(
-                                        color: Theme.of(context).accentColor,
-                                        fontSize: 40)),
-                                IconButton(
-                                  icon: !inFav
-                                      ? Icon(Icons.favorite_border,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor)
-                                      : Icon(Icons.favorite,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (favouritesCities != null && favouritesCities.length >= 5 && !inFav) Fluttertoast.showToast(
-                                          msg: "Favourites cities list is full!", toastLength: Toast.LENGTH_LONG);
-                                      else {
-                                        inFav = !inFav;
-                                        inFav
-                                            ? addToFavourites()
-                                            : removeFromFavourites();
-                                      }
-                                    });
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          Text(weatherDesc,
-                              style: TextStyle(
-                                  color: Theme.of(context).accentColor,
-                                  fontSize: 20)),
-                          Image.network(
-                            iconUrl + weatherIcon + '@2x.png',
-                            width: 100,
-                            height: 100,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text('${temperature.toString()} \u2103',
-                                style: TextStyle(
-                                    color: Theme.of(context).accentColor,
-                                    fontSize: 70)),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Feel',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Min',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Max',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Pressure',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Humidity',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Wind',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text('${feelTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${minTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${maxTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${pressure.toString()} hPa',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${humidity.toString()}%',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${wind.toString()} km/h',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                            ],
-                          ),
-                          Divider(
-                              color: Theme.of(context).accentColor,
-                              thickness: 2,
-                              height: 60,
-                              indent: 40,
-                              endIndent: 40),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 70),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text(currentLocation,
-                                    style: TextStyle(
-                                        color: Theme.of(context).accentColor,
-                                        fontSize: 40)),
-                                IconButton(
-                                  icon: !inFav
-                                      ? Icon(Icons.favorite_border,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor)
-                                      : Icon(Icons.favorite,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor),
-                                  onPressed: () {
-                                    setState(() {
-                                      inFav = !inFav;
-                                    });
-                                    inFav
-                                        ? Fluttertoast.showToast(
-                                            msg: 'Added to favourite!',
-                                            toastLength: Toast.LENGTH_SHORT)
-                                        : Fluttertoast.showToast(
-                                            msg: 'Removed from favourite!',
-                                            toastLength: Toast.LENGTH_SHORT);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          Text(weatherDesc,
-                              style: TextStyle(
-                                  color: Theme.of(context).accentColor,
-                                  fontSize: 20)),
-                          Image.network(
-                            iconUrl + weatherIcon + '@2x.png',
-                            width: 100,
-                            height: 100,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text('${temperature.toString()} \u2103',
-                                style: TextStyle(
-                                    color: Theme.of(context).accentColor,
-                                    fontSize: 70)),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Feel',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Min',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Max',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Pressure',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Humidity',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Wind',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text('${feelTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${minTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${maxTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${pressure.toString()} hPa',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${humidity.toString()}%',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${wind.toString()} km/h',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                            ],
-                          ),
-                          Divider(
-                              color: Theme.of(context).accentColor,
-                              thickness: 2,
-                              height: 60,
-                              indent: 40,
-                              endIndent: 40),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 70),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text(currentLocation,
-                                    style: TextStyle(
-                                        color: Theme.of(context).accentColor,
-                                        fontSize: 40)),
-                                IconButton(
-                                  icon: !inFav
-                                      ? Icon(Icons.favorite_border,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor)
-                                      : Icon(Icons.favorite,
-                                          size: 40,
-                                          color: Theme.of(context).accentColor),
-                                  onPressed: () {
-                                    setState(() {
-                                      inFav = !inFav;
-                                    });
-                                    inFav
-                                        ? Fluttertoast.showToast(
-                                            msg: 'Added to favourite!',
-                                            toastLength: Toast.LENGTH_SHORT)
-                                        : Fluttertoast.showToast(
-                                            msg: 'Removed from favourite!',
-                                            toastLength: Toast.LENGTH_SHORT);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          Text(weatherDesc,
-                              style: TextStyle(
-                                  color: Theme.of(context).accentColor,
-                                  fontSize: 20)),
-                          Image.network(
-                            iconUrl + weatherIcon + '@2x.png',
-                            width: 100,
-                            height: 100,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text('${temperature.toString()} \u2103',
-                                style: TextStyle(
-                                    color: Theme.of(context).accentColor,
-                                    fontSize: 70)),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Feel',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Min',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Max',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Pressure',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Humidity',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('Wind',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text('${feelTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${minTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${maxTemp.toString()} \u2103',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${pressure.toString()} hPa',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${humidity.toString()}%',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold)),
-                                  Text('${wind.toString()} km/h',
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              ),
-                            ],
-                          ),
-                          Divider(
-                              color: Theme.of(context).accentColor,
-                              thickness: 2,
-                              height: 60,
-                              indent: 40,
-                              endIndent: 40),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            Container(
+              margin: EdgeInsets.only(top: 90, left: 20),
+              child: Row(
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                  Container(
+                    child: Text(curr != null ? curr.name : 'Null'),
+                  )
+                ],
+              ),
             ),
+            PageView.builder(
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (ctx, i) => SingleCity(i)
+            )
           ],
         ),
       ),

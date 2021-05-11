@@ -1,12 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:i_weather_app/src/api_key.dart';
 import 'package:i_weather_app/src/constants.dart';
+import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/registration.dart';
-import 'package:http/http.dart' as http;
+import 'package:i_weather_app/src/services.dart';
 
 class StartScreen extends StatefulWidget {
   @override
@@ -14,14 +13,9 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
-  String currentLocation, weatherIcon, weatherDesc;
-  int temperature, feelTemp, minTemp, maxTemp, pressure, humidity, wind;
-
   Position _currentPosition;
-  // ignore: non_constant_identifier_names
-  final String API_KEY = APIKEY().API_KEY;
-  final String apiUrl = Constants().apiUrl;
-  final String iconUrl = Constants().iconUrl;
+  CurrentWeather _currentWeather;
+  final String _iconUrl = Constants().iconUrl;
 
   @override
   void initState() {
@@ -29,7 +23,7 @@ class _StartScreenState extends State<StartScreen> {
     super.initState();
   }
 
-  getCurrentLocation() {
+  getCurrentLocation() async {
     Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.best,
             forceAndroidLocationManager: true)
@@ -38,38 +32,15 @@ class _StartScreenState extends State<StartScreen> {
         _currentPosition = position;
       });
 
-      getWeatherInCurrentLocation();
+      Services.getCurrentWeatherByCoords(
+              _currentPosition.latitude, _currentPosition.longitude)
+          .then((value) {
+        setState(() {
+          _currentWeather = value;
+        });
+      });
     }).catchError((e) {
       print(e);
-    });
-  }
-
-  getWeatherInCurrentLocation() async {
-    var apiCall = apiUrl +
-        '/weather?lat=' +
-        _currentPosition.latitude.toString() +
-        '&lon=' +
-        _currentPosition.longitude.toString() +
-        '&units=metric&appid=' +
-        API_KEY;
-    var locationResult = await http.get(Uri.parse(apiCall));
-    var result = json.decode(locationResult.body);
-    print(result);
-
-    var weather = result['weather'][0];
-    var main = result['main'];
-
-    setState(() {
-      currentLocation = result['name'];
-      wind = (result['wind']['speed'] * 3.6).round();
-      weatherIcon = weather['icon'];
-      weatherDesc = weather['main'];
-      temperature = main['temp'].round();
-      feelTemp = main['feels_like'].round();
-      minTemp = main['temp_min'].round();
-      maxTemp = main['temp_max'].round();
-      pressure = main['pressure'].round();
-      humidity = main['humidity'];
     });
   }
 
@@ -97,28 +68,29 @@ class _StartScreenState extends State<StartScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(0, 70, 0, 20),
-              child: temperature == null
+              child: _currentWeather == null
                   ? Center(child: CircularProgressIndicator())
                   : Column(
                       children: [
                         Column(
                           children: [
-                            Text(currentLocation,
+                            Text(_currentWeather.name,
                                 style: TextStyle(
                                     color: Theme.of(context).accentColor,
                                     fontSize: 40)),
-                            Text(weatherDesc,
+                            Text(_currentWeather.weather[0].description,
                                 style: TextStyle(
                                     color: Theme.of(context).accentColor,
                                     fontSize: 25)),
                             Image.network(
-                              iconUrl + weatherIcon + '@2x.png',
+                              '$_iconUrl${_currentWeather.weather[0].icon}@2x.png',
                               width: 100,
                               height: 100,
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('${temperature.toString()} \u2103',
+                              child: Text(
+                                  '${_currentWeather.main.temp.toInt()} \u2103',
                                   style: TextStyle(
                                       color: Theme.of(context).accentColor,
                                       fontSize: 80)),
@@ -170,37 +142,40 @@ class _StartScreenState extends State<StartScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text('${feelTemp.toString()} \u2103',
+                                    Text(
+                                        '${_currentWeather.main.feelsLike.toInt()} \u2103',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${minTemp.toString()} \u2103',
+                                    Text(
+                                        '${_currentWeather.main.tempMin.toInt()} \u2103',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${maxTemp.toString()} \u2103',
+                                    Text(
+                                        '${_currentWeather.main.tempMax.toInt()} \u2103',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${pressure.toString()} hPa',
+                                    Text('${_currentWeather.main.pressure} hPa',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${humidity.toString()}%',
+                                    Text('${_currentWeather.main.humidity}%',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${wind.toString()} km/h',
+                                    Text('${_currentWeather.wind.speed} km/h',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
