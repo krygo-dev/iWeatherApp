@@ -1,14 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:i_weather_app/src/api_key.dart';
-import 'package:i_weather_app/src/constants.dart';
-import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/screens/login.dart';
+import 'package:i_weather_app/src/screens/search.dart';
 import 'package:i_weather_app/src/services.dart';
 import 'package:i_weather_app/src/widgets/single_city.dart';
-import 'package:intl/intl.dart';
+import 'package:i_weather_app/src/widgets/single_dot.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -16,94 +13,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // PageView variables
+  int _currentPage = 0;
+  var pageViewController = PageController();
+
+  // Firebase reference
   final auth = FirebaseAuth.instance;
   final realDB = FirebaseDatabase.instance.reference();
 
-  bool isSearching = false, inFav = false;
+  // Search functionality
+  bool isSearching = false;
+  String _search;
   var _searchController = TextEditingController();
 
-  String search,
-      currentLocation = 'Oświęcim',
-      currentLocationID = '3089658',
-      weatherIcon = '04d',
-      weatherDesc = 'Cloud';
+  //var date = DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(1631463245 * 1000));
 
-  int temperature = 23,
-      feelTemp = 20,
-      minTemp = 21,
-      maxTemp = 25,
-      pressure = 1000,
-      humidity = 78,
-      wind = 4;
-
-  var date = DateFormat.yMMMd()
-      .format(DateTime.fromMillisecondsSinceEpoch(1631463245 * 1000));
-
-  var dbSnapshot;
-  Map favouritesCities;
-  List favCitiesIDs;
-  CurrentWeather curr;
-
-  List<CurrentWeather> favCitiesWeather = [];
-
-  // ignore: non_constant_identifier_names
-  final String API_KEY = APIKEY().API_KEY;
-  String apiUrl = Constants().apiUrl;
-  String iconUrl = Constants().iconUrl;
-
-  void searchLocation(String locationName) {
-    print(locationName);
-  }
-
-  void addToFavourites() {
-    realDB.child(auth.currentUser.uid).child('favourites').update({
-      '$currentLocationID': {'id': currentLocationID, 'name': currentLocation}
+  _onPageChanged(int index) {
+    setState(() {
+      _currentPage = index;
     });
-    readUserFavourites();
-
-    Fluttertoast.showToast(
-        msg: 'Added to favourites!', toastLength: Toast.LENGTH_SHORT);
-  }
-
-  void removeFromFavourites() {
-    realDB
-        .child(auth.currentUser.uid)
-        .child('favourites')
-        .child(currentLocationID)
-        .remove();
-    readUserFavourites();
-    Fluttertoast.showToast(
-        msg: 'Removed from favourites!', toastLength: Toast.LENGTH_SHORT);
-  }
-
-  void readUserFavourites() async {
-    await realDB.child(auth.currentUser.uid).once().then((dataSnapshot) {
-      dbSnapshot = dataSnapshot.value;
-    });
-
-    print(dbSnapshot['favourites']);
-    favouritesCities = dbSnapshot['favourites'];
-    favCitiesIDs = favouritesCities.keys.toList();
-
-    favCitiesIDs.forEach((id) {
-      Services.getCurrentWeatherByCityID(id.toString()).then((value) {
-        setState(() {
-          favCitiesWeather.add(value);
-        });
-      });
-    });
-
-    print(favouritesCities != null ? favouritesCities.keys.toList() : 'Empty');
   }
 
   @override
   void initState() {
-    readUserFavourites();
-    Services.getCurrentWeatherByCityID('3089658').then((value) {
-      setState(() {
-        curr = value;
-      });
-    });
+    Services.getUserData();
     super.initState();
   }
 
@@ -145,13 +78,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     )),
                 onSubmitted: (value) {
                   setState(() {
-                    search = value.trim();
+                    _search = value.trim();
                   });
-                  searchLocation(search);
+
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => SearchScreen(cityName: _search)));
                 },
                 onChanged: (value) {
                   setState(() {
-                    search = value.trim();
+                    _search = value.trim();
                   });
                 },
               ),
@@ -196,56 +131,19 @@ class _HomeScreenState extends State<HomeScreen> {
               margin: EdgeInsets.only(top: 90, left: 20),
               child: Row(
                 children: [
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).accentColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).accentColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).accentColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).accentColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  Container(
-                    child: Text(curr != null ? curr.name : 'Null'),
-                  )
+                  for (int i = 0;
+                      i < Services.favouritesCitiesCurrentWeather.length;
+                      i++)
+                    if (i == _currentPage) SingleDot(true) else SingleDot(false)
                 ],
               ),
             ),
             PageView.builder(
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (ctx, i) => SingleCity(i)
-            )
+                scrollDirection: Axis.horizontal,
+                onPageChanged: _onPageChanged,
+                controller: pageViewController,
+                itemCount: Services.favouritesCitiesCurrentWeather.length,
+                itemBuilder: (ctx, i) => SingleCity(i))
           ],
         ),
       ),

@@ -1,49 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:i_weather_app/src/constants.dart';
+import 'package:i_weather_app/src/screens/home.dart';
+import 'package:i_weather_app/src/services.dart';
 
 class SingleCity extends StatelessWidget {
-
   final int index;
   SingleCity(this.index);
 
-  final iconUrl = Constants().iconUrl;
+  final _iconUrl = Constants().iconUrl;
+  final cities = Services.favouritesCitiesCurrentWeather;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 90),
+          padding: const EdgeInsets.only(top: 100),
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text('Oświecim',
+                    Text(cities[index].name,
                         style: TextStyle(
                             color: Theme.of(context).accentColor,
                             fontSize: 40)),
+                    IconButton(
+                        icon: Icon(Icons.favorite,
+                            size: 40, color: Theme.of(context).accentColor),
+                        onPressed: () {
+                          Services.removeFromFavourites(cities[index].id);
+                        })
                   ],
                 ),
               ),
-              Text('Clear sky',
+              Text(cities[index].weather[0].description,
                   style: TextStyle(
-                      color: Theme.of(context).accentColor,
-                      fontSize: 20)),
+                      color: Theme.of(context).accentColor, fontSize: 20)),
               Image.network(
-                iconUrl + '02d' + '@2x.png',
+                '$_iconUrl${cities[index].weather[0].icon}@2x.png',
                 width: 100,
                 height: 100,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text('23 \u2103',
+                child: Text('${cities[index].main.temp.toInt()} \u2103',
                     style: TextStyle(
-                        color: Theme.of(context).accentColor,
-                        fontSize: 70)),
+                        color: Theme.of(context).accentColor, fontSize: 70)),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -86,32 +92,32 @@ class SingleCity extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('20 \u2103',
+                      Text('${cities[index].main.feelsLike.toInt()} \u2103',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('21 \u2103',
+                      Text('${cities[index].main.tempMin.toInt()} \u2103',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('25 \u2103',
+                      Text('${cities[index].main.tempMax.toInt()} \u2103',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('1013 hPa',
+                      Text('${cities[index].main.pressure} hPa',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('88%',
+                      Text('${cities[index].main.humidity}%',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('3.5 km/h',
+                      Text('${cities[index].wind.speed} km/h',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
@@ -120,12 +126,30 @@ class SingleCity extends StatelessWidget {
                   ),
                 ],
               ),
-              Divider(
-                  color: Theme.of(context).accentColor,
-                  thickness: 2,
-                  height: 60,
-                  indent: 40,
-                  endIndent: 40),
+              Container(
+                margin: EdgeInsets.fromLTRB(40, 80, 40, 0),
+                width: 250,
+                height: 45,
+                child: ElevatedButton(
+                  child: Text(
+                    "Get 7 days forecast!",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'RadikalMedium',
+                        fontSize: 17),
+                  ),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          Theme.of(context).accentColor),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ))),
+                  onPressed: () {
+                    print("Button clicked!");
+                  },
+                ),
+              ),
             ],
           ),
         ),
