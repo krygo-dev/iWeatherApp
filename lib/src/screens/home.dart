@@ -138,7 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            PageView.builder(
+            Services.favouritesCitiesCurrentWeather.isEmpty
+                ? Center(child: Text("You don't have any favourites cities!")) : PageView.builder(
                 scrollDirection: Axis.horizontal,
                 onPageChanged: _onPageChanged,
                 controller: pageViewController,

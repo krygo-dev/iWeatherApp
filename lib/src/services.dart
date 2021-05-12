@@ -17,7 +17,7 @@ class Services {
   // Current user data from database
   static var _userData;
   static Map _userFavourites;
-  static List _userFavouritesID;
+  static List userFavouritesID;
   static List<CurrentWeather> favouritesCitiesCurrentWeather = [];
 
   static Future<CurrentWeather> getCurrentWeatherByCityID(String cityID) async {
@@ -77,7 +77,7 @@ class Services {
       double lat, double lon) async {
     try {
       final response = await http.get(Uri.parse(
-          '${_apiURL}onecall?lat=$lat&lon=$lon&exclude=current,hourly,minutely,alerts&appid=$_API_KEY'));
+          '${_apiURL}onecall?lat=$lat&lon=$lon&exclude=current,hourly,minutely,alerts&units=metric&appid=$_API_KEY'));
 
       if (response.statusCode == 200) {
         final ForecastWeather forecastWeather = forecastWeatherFromJson(response.body);
@@ -97,16 +97,13 @@ class Services {
 
     print(_userData['favourites']);
     _userFavourites = _userData['favourites'];
-    _userFavouritesID = _userFavourites.keys.toList();
+    userFavouritesID = _userFavourites != null ? _userFavourites.keys.toList() : [];
+    favouritesCitiesCurrentWeather = [];
 
-    _userFavouritesID.forEach((id) {
+    userFavouritesID.forEach((id) {
       Services.getCurrentWeatherByCityID(id.toString()).then((value) {
         favouritesCitiesCurrentWeather.add(value);
       });
-    });
-
-    Future.delayed(Duration(milliseconds: 2000), () {
-      print(favouritesCitiesCurrentWeather);
     });
 
     print(_userFavourites != null ? _userFavourites.keys.toList() : 'Empty');
