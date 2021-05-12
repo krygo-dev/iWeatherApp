@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:i_weather_app/src/api_key.dart';
-import 'package:i_weather_app/src/constants.dart';
+import 'package:i_weather_app/src/util/api_key.dart';
 import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:http/http.dart' as http;
 import 'package:i_weather_app/src/models/forecast_weather.dart';
+import 'package:i_weather_app/src/util/constants.dart';
 
 class Services {
   static final auth = FirebaseAuth.instance;

@@ -3,9 +3,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/search.dart';
-import 'package:i_weather_app/src/services.dart';
+import 'package:i_weather_app/src/util/buildin_transform.dart';
+import 'package:i_weather_app/src/util/services.dart';
 import 'package:i_weather_app/src/widgets/single_city.dart';
 import 'package:i_weather_app/src/widgets/single_dot.dart';
+import 'package:transformer_page_view/transformer_page_view.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -81,8 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _search = value.trim();
                   });
 
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => SearchScreen(cityName: _search)));
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => SearchScreen(cityName: _search)));
                 },
                 onChanged: (value) {
                   setState(() {
@@ -139,12 +141,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Services.favouritesCitiesCurrentWeather.isEmpty
-                ? Center(child: Text("You don't have any favourites cities!")) : PageView.builder(
-                scrollDirection: Axis.horizontal,
-                onPageChanged: _onPageChanged,
-                controller: pageViewController,
-                itemCount: Services.favouritesCitiesCurrentWeather.length,
-                itemBuilder: (ctx, i) => SingleCity(i))
+                ? Center(child: Text("You don't have any favourites cities!"))
+                : TransformerPageView(
+                    scrollDirection: Axis.horizontal,
+                    onPageChanged: _onPageChanged,
+                    transformer: ScaleAndFadeTransformer(),
+                    viewportFraction: 0.8,
+                    loop: false,
+                    itemCount: Services.favouritesCitiesCurrentWeather.length,
+                    itemBuilder: (ctx, i) => SingleCity(i))
           ],
         ),
       ),

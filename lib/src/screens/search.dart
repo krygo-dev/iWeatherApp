@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:i_weather_app/src/constants.dart';
 import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/models/forecast_weather.dart';
 import 'package:i_weather_app/src/screens/home.dart';
-import 'package:i_weather_app/src/services.dart';
+import 'package:i_weather_app/src/util/constants.dart';
+import 'package:i_weather_app/src/util/services.dart';
 
 class SearchScreen extends StatefulWidget {
   final String cityName;

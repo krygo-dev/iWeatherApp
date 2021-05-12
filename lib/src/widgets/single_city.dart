@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:i_weather_app/src/constants.dart';
-import 'package:i_weather_app/src/services.dart';
+import 'package:i_weather_app/src/util/constants.dart';
+import 'package:i_weather_app/src/util/services.dart';
 
 class SingleCity extends StatelessWidget {
   final int index;

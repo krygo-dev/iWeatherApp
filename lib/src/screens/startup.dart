@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:i_weather_app/src/constants.dart';
 import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/registration.dart';
-import 'package:i_weather_app/src/services.dart';
+import 'package:i_weather_app/src/util/constants.dart';
+import 'package:i_weather_app/src/util/services.dart';
 
 class StartScreen extends StatefulWidget {
   @override
