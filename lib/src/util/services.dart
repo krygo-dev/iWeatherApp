@@ -91,6 +91,11 @@ class Services {
   }
 
   static void getUserData() async {
+    _userData = null;
+    _userFavourites = null;
+    userFavouritesID = [];
+    favouritesCitiesCurrentWeather = [];
+
     await realDB.child(auth.currentUser.uid).once().then((dataSnapshot) {
       _userData = dataSnapshot.value;
     });
@@ -98,7 +103,6 @@ class Services {
     print(_userData['favourites']);
     _userFavourites = _userData['favourites'];
     userFavouritesID = _userFavourites != null ? _userFavourites.keys.toList() : [];
-    favouritesCitiesCurrentWeather = [];
 
     userFavouritesID.forEach((id) {
       Services.getCurrentWeatherByCityID(id.toString()).then((value) {

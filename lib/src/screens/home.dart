@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/search.dart';
@@ -17,18 +16,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // PageView variables
   int _currentPage = 0;
-  var pageViewController = PageController();
 
   // Firebase reference
   final auth = FirebaseAuth.instance;
-  final realDB = FirebaseDatabase.instance.reference();
 
   // Search functionality
   bool isSearching = false;
   String _search;
   var _searchController = TextEditingController();
-
-  //var date = DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(1631463245 * 1000));
 
   _onPageChanged(int index) {
     setState(() {
@@ -83,8 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     _search = value.trim();
                   });
 
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => SearchScreen(cityName: _search)));
+                  Navigator.of(context)
+                      .pushReplacement(MaterialPageRoute(
+                          builder: (context) =>
+                              SearchScreen(cityName: _search)));
                 },
                 onChanged: (value) {
                   setState(() {
@@ -117,9 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         child: Stack(
           children: [
-            //Container(
-            //  decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            //),
             Image.asset(
               'assets/png/bg.png',
               fit: BoxFit.cover,
@@ -141,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Services.favouritesCitiesCurrentWeather.isEmpty
-                ? Center(child: Text("You don't have any favourites cities!"))
+                ? Center(child: CircularProgressIndicator())
                 : TransformerPageView(
                     scrollDirection: Axis.horizontal,
                     onPageChanged: _onPageChanged,

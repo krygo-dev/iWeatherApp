@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:i_weather_app/src/screens/forecast.dart';
 import 'package:i_weather_app/src/util/constants.dart';
 import 'package:i_weather_app/src/util/services.dart';
 
@@ -116,7 +117,7 @@ class SingleCity extends StatelessWidget {
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      Text('${cities[index].wind.speed} km/h',
+                      Text('${(cities[index].wind.speed * 3.6).round()} km/h',
                           style: TextStyle(
                               color: Theme.of(context).accentColor,
                               fontSize: 25,
@@ -145,7 +146,11 @@ class SingleCity extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25.0),
                       ))),
                   onPressed: () {
-                    print("Button clicked!");
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => ForecastScreen(
+                            cityName: cities[index].name,
+                            lat: cities[index].coord.lat,
+                            lon: cities[index].coord.lon)));
                   },
                 ),
               ),

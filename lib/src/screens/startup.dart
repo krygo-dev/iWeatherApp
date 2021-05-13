@@ -175,7 +175,7 @@ class _StartScreenState extends State<StartScreen> {
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${_currentWeather.wind.speed} km/h',
+                                    Text('${(_currentWeather.wind.speed * 3.6).round()} km/h',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
