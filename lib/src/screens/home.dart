@@ -45,6 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Delay aby dane zostały pobrane
+    Future.delayed(Duration(milliseconds: 500)).then((value) {
+      setState(() {});
+    });
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
