@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    Services.getUserData();
+    if (Services.favouritesCitiesCurrentWeather.isEmpty) Services.getUserData();
     super.initState();
   }
 
