@@ -12,13 +12,13 @@ Mobile app that shows weather in current location (if user agree for geolocation
 User can also sign up to see weather and 7-days forecast in all cities from the world. User also can add five different cities to his favorites cities list and see the weather for them everytime he wants.
 
 ## UI
-![Startup Screen](https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/startup_screen.png =540x1110)
+<img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/startup_screen.png" width="540" height="1110" >
 
-![Home Screen](https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/home_screen.png =540x1110)
+<img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/home_screen.png" width="540" height="1110" >
 
-![Forecast Screen](https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/forecast_screen.png =540x1110)
+<img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/forecast_screen.png" width="540" height="1110" >
 
-![Search Screen](https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/search_screen.png =540x1110)
+<img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/search_screen.png" width="540" height="1110" >
 
 License
 ----
