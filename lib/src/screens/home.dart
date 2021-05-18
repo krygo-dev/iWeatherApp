@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/search.dart';
 import 'package:i_weather_app/src/util/buildin_transform.dart';
@@ -105,6 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         actions: [
+          IconButton(
+              icon: Icon(Icons.refresh,
+                  color: Theme.of(context).accentColor, size: 30),
+              onPressed: () {
+                if (this.mounted) setState(() {
+                  Fluttertoast.showToast(msg: 'Refreshing data...', toastLength: Toast.LENGTH_SHORT);
+                  Services.getUserData();
+                });
+              }),
           IconButton(
               icon: Icon(Icons.logout,
                   color: Theme.of(context).accentColor, size: 30),

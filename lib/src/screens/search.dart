@@ -95,7 +95,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   IconButton(
                                       icon: inFav ||
                                               Services.userFavouritesID
-                                                  .contains(_currentWeather.id)
+                                                  .contains(_currentWeather.id.toString())
                                           ? Icon(Icons.favorite,
                                               size: 40,
                                               color: Theme.of(context).accentColor)
