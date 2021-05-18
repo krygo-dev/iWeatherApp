@@ -14,10 +14,10 @@ User can also sign up to see weather and 7-days forecast in all cities from the 
 ## UI
 
 <p align="center">
-  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/startup_screen.png" width="400" height="822" >
-  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/home_screen.png" width="400" height="822" >
-  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/forecast_screen.png" width="400" height="822" >
-  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/search_screen.png" width="400" height="822" >
+  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/startup_screen.png" width="400" height="822" style="padding:5px">
+  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/home_screen.png" width="400" height="822" style="padding:5px">
+  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/forecast_screen.png" width="400" height="822" style="padding:5px">
+  <img src="https://github.com/krygo-dev/iWeatherApp/blob/main/screenshots/search_screen.png" width="400" height="822" style="padding:5px">
 </p>
 
 License
