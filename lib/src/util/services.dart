@@ -23,7 +23,7 @@ class Services {
   static Future<CurrentWeather> getCurrentWeatherByCityID(String cityID) async {
     try {
       final response = await http.get(Uri.parse(
-          '${_apiURL}weather?id=$cityID&units=metric&appid=$_API_KEY'));
+          '${_apiURL}weather?id=$cityID&units=metric&lang=en&appid=$_API_KEY'));
 
       if (response.statusCode == 200) {
         final CurrentWeather currentWeather =
@@ -41,7 +41,7 @@ class Services {
       double lat, double lon) async {
     try {
       final response = await http.get(Uri.parse(
-          '${_apiURL}weather?lat=$lat&lon=$lon&units=metric&appid=$_API_KEY'));
+          '${_apiURL}weather?lat=$lat&lon=$lon&units=metric&lang=en&appid=$_API_KEY'));
 
       if (response.statusCode == 200) {
         final CurrentWeather currentWeather =
@@ -59,7 +59,7 @@ class Services {
       String cityName) async {
     try {
       final response = await http.get(Uri.parse(
-          '${_apiURL}weather?q=$cityName&units=metric&appid=$_API_KEY'));
+          '${_apiURL}weather?q=$cityName&units=metric&lang=en&appid=$_API_KEY'));
 
       if (response.statusCode == 200) {
         final CurrentWeather currentWeather =
@@ -77,7 +77,7 @@ class Services {
       double lat, double lon) async {
     try {
       final response = await http.get(Uri.parse(
-          '${_apiURL}onecall?lat=$lat&lon=$lon&exclude=current,hourly,minutely,alerts&units=metric&appid=$_API_KEY'));
+          '${_apiURL}onecall?lat=$lat&lon=$lon&exclude=current,hourly,minutely,alerts&units=metric&lang=en&appid=$_API_KEY'));
 
       if (response.statusCode == 200) {
         final ForecastWeather forecastWeather = forecastWeatherFromJson(response.body);

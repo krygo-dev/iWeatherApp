@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:i_weather_app/src/models/current_weather.dart';
 import 'package:i_weather_app/src/screens/login.dart';
 import 'package:i_weather_app/src/screens/registration.dart';
 import 'package:i_weather_app/src/util/constants.dart';
 import 'package:i_weather_app/src/util/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 class StartScreen extends StatefulWidget {
   @override
@@ -17,13 +22,10 @@ class _StartScreenState extends State<StartScreen> {
   CurrentWeather _currentWeather;
   final String _iconUrl = Constants().iconUrl;
 
-  @override
-  void initState() {
-    getCurrentLocation();
-    super.initState();
-  }
-
-  getCurrentLocation() async {
+  _getCurrentLocation() async {
+    Fluttertoast.showToast(
+        msg: 'Loading current weather for your location...',
+        toastLength: Toast.LENGTH_LONG);
     Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.best,
             forceAndroidLocationManager: true)
@@ -44,6 +46,40 @@ class _StartScreenState extends State<StartScreen> {
     });
   }
 
+  _lookupUserCountry() async {
+    final response =
+        await http.get(Uri.parse('https://api.ipregistry.co?key=tryout'));
+
+    if (response.statusCode == 200) {
+      Fluttertoast.showToast(
+          msg: 'Loading current weather for your country capital city...',
+          toastLength: Toast.LENGTH_LONG);
+      final capitalCity =
+          json.decode(response.body)['location']['country']['capital'];
+      Services.getCurrentWeatherByCityName(capitalCity).then((value) {
+        setState(() {
+          _currentWeather = value;
+        });
+      });
+    } else {
+      throw Exception('Failed to get user country from IP address');
+    }
+  }
+
+  Future<void> _permissions() async {
+    if (await Permission.location.request().isGranted) {
+      _getCurrentLocation();
+    } else {
+      _lookupUserCountry();
+    }
+  }
+
+  @override
+  void initState() {
+    _permissions();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +89,16 @@ class _StartScreenState extends State<StartScreen> {
         title: Text(''),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.refresh,
+                  color: Theme.of(context).accentColor, size: 30),
+              onPressed: () {
+                if (this.mounted) setState(() {
+                  _permissions();
+                });
+              })
+        ],
       ),
       body: Container(
         child: Stack(
@@ -175,7 +221,8 @@ class _StartScreenState extends State<StartScreen> {
                                                 Theme.of(context).accentColor,
                                             fontSize: 25,
                                             fontWeight: FontWeight.bold)),
-                                    Text('${(_currentWeather.wind.speed * 3.6).round()} km/h',
+                                    Text(
+                                        '${(_currentWeather.wind.speed * 3.6).round()} km/h',
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,

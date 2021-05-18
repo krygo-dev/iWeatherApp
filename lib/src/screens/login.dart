@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
-import 'package:i_weather_app/src/util/services.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
