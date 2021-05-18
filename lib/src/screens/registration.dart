@@ -2,8 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:i_weather_app/src/screens/home.dart';
 import 'package:i_weather_app/src/screens/startup.dart';
-import 'package:i_weather_app/src/screens/verify.dart';
+import 'package:i_weather_app/src/util/services.dart';
 
 class RegistrationScreen extends StatefulWidget {
   @override
@@ -205,10 +206,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         throw ("Passwords must be the same.");
       else {
         await auth.createUserWithEmailAndPassword(
-            email: email, password: password);
+            email: email, password: password).then((value) => {
+              Services.addUserToDatabase(auth.currentUser.uid, email)
+        });
 
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => VerifyScreen()));
+            MaterialPageRoute(builder: (context) => HomeScreen()));
       }
     } on FirebaseAuthException catch (error) {
       Fluttertoast.showToast(

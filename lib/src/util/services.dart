@@ -113,6 +113,13 @@ class Services {
     print(_userFavourites != null ? _userFavourites.keys.toList() : 'Empty');
   }
 
+  static void addUserToDatabase(String uid, String email) async {
+    await realDB.child(uid).set({
+      'uid' : uid,
+      'email' : email
+    });
+  }
+
   static void addToFavourites(int cityID, String cityName) {
     realDB.child(auth.currentUser.uid).child('favourites').update({
       '$cityID': {'id': cityID, 'name': cityName}

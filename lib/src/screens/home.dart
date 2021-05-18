@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -17,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // PageView variables
   int _currentPage = 0;
+
+  bool favouritesListEmpty = false;
 
   // Firebase reference
   final auth = FirebaseAuth.instance;
@@ -48,7 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Delay aby dane zostały pobrane
     Future.delayed(Duration(milliseconds: 500)).then((value) {
-      if (this.mounted) setState(() {});
+      if (this.mounted)
+        setState(() {
+          if (Services.userFavouritesID.isEmpty) {
+            favouritesListEmpty = true;
+          } else {
+            favouritesListEmpty = false;
+          }
+        });
     });
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -83,10 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _search = value.trim();
                   });
 
-                  Navigator.of(context)
-                      .pushReplacement(MaterialPageRoute(
-                          builder: (context) =>
-                              SearchScreen(cityName: _search)));
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => SearchScreen(cityName: _search)));
                 },
                 onChanged: (value) {
                   setState(() {
@@ -110,10 +118,13 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.refresh,
                   color: Theme.of(context).accentColor, size: 30),
               onPressed: () {
-                if (this.mounted) setState(() {
-                  Fluttertoast.showToast(msg: 'Refreshing data...', toastLength: Toast.LENGTH_SHORT);
-                  Services.getUserData();
-                });
+                if (this.mounted)
+                  setState(() {
+                    Fluttertoast.showToast(
+                        msg: 'Refreshing data...',
+                        toastLength: Toast.LENGTH_SHORT);
+                    Services.getUserData();
+                  });
               }),
           IconButton(
               icon: Icon(Icons.logout,
@@ -148,16 +159,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            Services.favouritesCitiesCurrentWeather.isEmpty
-                ? Center(child: CircularProgressIndicator())
-                : TransformerPageView(
-                    scrollDirection: Axis.horizontal,
-                    onPageChanged: _onPageChanged,
-                    transformer: ScaleAndFadeTransformer(),
-                    viewportFraction: 0.8,
-                    loop: false,
-                    itemCount: Services.favouritesCitiesCurrentWeather.length,
-                    itemBuilder: (ctx, i) => SingleCity(i))
+            if (Services.favouritesCitiesCurrentWeather.isEmpty &&
+                !favouritesListEmpty)
+              Center(child: CircularProgressIndicator())
+            else if (favouritesListEmpty)
+              Center(
+                  child: Text(
+                'Your favourites cities\n list is empty!\n\n Search for city and\n add it with heart icon!',
+                style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center
+              ))
+            else
+              TransformerPageView(
+                  scrollDirection: Axis.horizontal,
+                  onPageChanged: _onPageChanged,
+                  transformer: ScaleAndFadeTransformer(),
+                  viewportFraction: 0.8,
+                  loop: false,
+                  itemCount: Services.favouritesCitiesCurrentWeather.length,
+                  itemBuilder: (ctx, i) => SingleCity(i))
           ],
         ),
       ),
