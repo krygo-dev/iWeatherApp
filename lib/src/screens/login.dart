@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   var _controllerPassword = TextEditingController();
   String email, password;
   bool passwordVisible = false;
+  bool emailSent = false;
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +148,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         signIn(email, password);
                       },
                     ),
+                  ),
+                  Container(
+                    child: TextButton(
+                      child: Text(
+                        !emailSent ? "Reset password!" : "Check your email!",
+                        style: TextStyle(
+                          color: Theme.of(context).accentColor,
+                          fontSize: 17,
+                          fontFamily: 'RadicalMedium',
+                          decoration: TextDecoration.underline
+                        ),
+                      ),
+                      onPressed: () {
+                        if (!emailSent) resetPassword(email);
+                      },
+                    ),
                   )
                 ],
               ),
@@ -163,6 +180,25 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));
     } on FirebaseAuthException catch (error) {
+      Fluttertoast.showToast(
+          msg: error.message, toastLength: Toast.LENGTH_LONG);
+    } catch (error) {
+      Fluttertoast.showToast(
+          msg: error.toString(), toastLength: Toast.LENGTH_LONG);
+    }
+  }
+
+  void resetPassword(String email) async {
+    try {
+      if (email == null || email.isEmpty) throw ("Fill up email field with your account email.");
+      else {
+        await auth.sendPasswordResetEmail(email: email).then((value) {
+          setState(() {
+            emailSent = true;
+          });
+        });
+      }
+    } on FirebaseException catch (error) {
       Fluttertoast.showToast(
           msg: error.message, toastLength: Toast.LENGTH_LONG);
     } catch (error) {
